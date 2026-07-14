@@ -92,7 +92,7 @@ function remove(id: number) {
             <tr>
               <th class="col-num">#</th>
               <th>Nome</th>
-              <th class="col-right">% Comissão Padrão</th>
+              <th>% Comissão Padrão</th>
               <th class="col-actions">Ações</th>
             </tr>
           </thead>
@@ -105,7 +105,7 @@ function remove(id: number) {
                   <span class="nome-bold">{{ m.nome }}</span>
                 </div>
               </td>
-              <td class="col-right">
+              <td>
                 <span class="pct-badge">{{ PCT(m.percentComissao) }}</span>
               </td>
               <td class="col-actions">
@@ -197,7 +197,6 @@ function remove(id: number) {
 .data-table tbody tr:hover { background: #fafbfc; }
 
 .col-num { width: 48px; color: #94a3b8 !important; font-size: 12px !important; }
-.col-right { text-align: right; }
 .col-actions { width: 88px; text-align: center; }
 
 .motorista-row { display: flex; align-items: center; gap: 10px; }

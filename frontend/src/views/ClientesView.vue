@@ -73,7 +73,7 @@ function remove(id: number) {
             <tr>
               <th class="col-num">#</th>
               <th>Nome</th>
-              <th class="col-right">Meta Mensal</th>
+              <th>Meta Mensal</th>
               <th class="col-actions">Ações</th>
             </tr>
           </thead>
@@ -81,7 +81,7 @@ function remove(id: number) {
             <tr v-for="(cl, i) in clientes" :key="cl.id">
               <td class="col-num">{{ i + 1 }}</td>
               <td><span class="nome-bold">{{ cl.nome }}</span></td>
-              <td class="col-right meta-val">{{ BRL(cl.meta) }}</td>
+              <td class="meta-val">{{ BRL(cl.meta) }}</td>
               <td class="col-actions">
                 <button class="icon-btn edit" @click="openEdit(cl)" title="Editar">
                   <i class="pi pi-pencil" />
@@ -98,7 +98,7 @@ function remove(id: number) {
           <tfoot v-if="clientes.length">
             <tr>
               <td colspan="2" class="foot-label">Total</td>
-              <td class="col-right foot-val">{{ BRL(totalMeta) }}</td>
+              <td class="foot-val">{{ BRL(totalMeta) }}</td>
               <td />
             </tr>
           </tfoot>
@@ -183,14 +183,13 @@ function remove(id: number) {
 }
 
 .col-num { width: 48px; color: #94a3b8 !important; font-size: 12px !important; }
-.col-right { text-align: right; }
 .col-actions { width: 88px; text-align: center; }
 
 .nome-bold { font-weight: 600; color: #0f172a; }
 .meta-val { font-weight: 600; color: #7c3aed; }
 
 .foot-label { font-weight: 600; color: #374151; }
-.foot-val { font-weight: 700; color: #7c3aed; text-align: right; font-size: 14px; }
+.foot-val { font-weight: 700; color: #7c3aed; font-size: 14px; }
 
 .empty-row {
   text-align: center;
