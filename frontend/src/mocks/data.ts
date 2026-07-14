@@ -52,6 +52,25 @@ export const mockIndicadores: IndicadorSemanal[] = [
   { mes: '2026-05', semana: 4, ligacoes: 29, leadsAdicionados: 6,  leadsDeclinados: 1, clientesFechados: 3 },
 ]
 
+export interface Cotacao {
+  id: number; data: string; clienteId: number
+  origem: string; destino: string; km: number | null; tipoVeiculo: string
+  valorMotorista: number | null; valorEmpresa: number | null; valorNf: number | null
+  icmsPercent: number; coPercent: number; impostoPercent: number
+  seguroPercent: number; diasPagamento: number; percentComissao: number
+  comissaoValor: number; lucro: number; percentRentabilidade: number
+  situacao: 'pendente' | 'batida'
+}
+
+export const mockCotacoes: Cotacao[] = [
+  { id: 1, data: '2026-07-14', clienteId: 1, origem: 'São Paulo/SP', destino: 'Salvador/BA', km: 1950, tipoVeiculo: 'CARRETA', valorMotorista: 7200, valorEmpresa: 14500, valorNf: 15000, icmsPercent: 4, coPercent: 3.5, impostoPercent: 6.5, seguroPercent: 0.03, diasPagamento: 15, percentComissao: 13, comissaoValor: 949, lucro: 3104, percentRentabilidade: 0.2141, situacao: 'pendente' },
+  { id: 2, data: '2026-07-14', clienteId: 2, origem: 'Campinas/SP', destino: 'Recife/PE', km: 2400, tipoVeiculo: 'TRUCK', valorMotorista: 9100, valorEmpresa: 13900, valorNf: 50000, icmsPercent: 12, coPercent: 0, impostoPercent: 6.5, seguroPercent: 0.03, diasPagamento: 15, percentComissao: 10, comissaoValor: 480, lucro: 2198, percentRentabilidade: 0.1582, situacao: 'pendente' },
+  { id: 3, data: '2026-07-13', clienteId: 1, origem: 'Guarulhos/SP', destino: 'Franca/SP', km: 412, tipoVeiculo: 'TRUCK', valorMotorista: 3050, valorEmpresa: 5900, valorNf: 100000, icmsPercent: 12, coPercent: 0, impostoPercent: 6.5, seguroPercent: 0.03, diasPagamento: 15, percentComissao: 13, comissaoValor: 369, lucro: 1148, percentRentabilidade: 0.1947, situacao: 'pendente' },
+  { id: 4, data: '2026-07-12', clienteId: 3, origem: 'Betim/MG', destino: 'Goiânia/GO', km: 890, tipoVeiculo: 'BITRUCK', valorMotorista: 9860, valorEmpresa: 15950, valorNf: 150000, icmsPercent: 5.6, coPercent: 3.5, impostoPercent: 6.5, seguroPercent: 0.03, diasPagamento: 15, percentComissao: 10, comissaoValor: 609, lucro: 2476, percentRentabilidade: 0.1552, situacao: 'pendente' },
+  { id: 5, data: '2026-07-11', clienteId: 4, origem: 'Porto Alegre/RS', destino: 'Curitiba/PR', km: 698, tipoVeiculo: 'CARRETA', valorMotorista: 4500, valorEmpresa: 6600, valorNf: 80000, icmsPercent: 12, coPercent: 0, impostoPercent: 6.5, seguroPercent: 0.03, diasPagamento: 15, percentComissao: 3, comissaoValor: 63, lucro: 586, percentRentabilidade: 0.0889, situacao: 'batida' },
+  { id: 6, data: '2026-07-10', clienteId: 2, origem: 'Viana/ES', destino: 'Cajuru/SP', km: 963, tipoVeiculo: 'CARRETA', valorMotorista: 8200, valorEmpresa: 13300, valorNf: 350000, icmsPercent: 12, coPercent: 0, impostoPercent: 6.5, seguroPercent: 0.03, diasPagamento: 15, percentComissao: 7, comissaoValor: 357, lucro: 1781, percentRentabilidade: 0.1340, situacao: 'batida' },
+]
+
 export const mockCargas: Carga[] = [
   { id: 1, data: '2026-07-01', cte: '10001', origem: 'São Paulo/SP', destino: 'Salvador/BA', clienteId: 1, motoristaId: 1, valorMotorista: 6800, valorEmpresa: 14000, valorNf: 14500, seguroPercent: 0.003, icmsPercent: 0.04, coPercent: 0.035, impostoPercent: 0.04, diasPagamento: 30, percentComissao: 0.10, seguroValor: 43.5, coValor: 490, impostoValor: 560, boletoPercent: 0.0399, movaValor: 558.6, adqTabValor: 119, totalTaxasPercent: 0.1549, valorImpostoTotal: 2288, comissaoValor: 720, boletosValor: 17.5, lucro: 3131, percentRentabilidade: 0.2237, status: 'entregue', canhotoPago: true, tipoEntrega: 'CIF', formaPagamento: 'Boleto' },
   { id: 2, data: '2026-07-03', cte: '10002', origem: 'Campinas/SP', destino: 'Recife/PE', clienteId: 2, motoristaId: 2, valorMotorista: 4200, valorEmpresa: 8400, valorNf: 8700, seguroPercent: 0.003, icmsPercent: 0.04, coPercent: 0.035, impostoPercent: 0.04, diasPagamento: 28, percentComissao: 0.08, seguroValor: 26.1, coValor: 294, impostoValor: 336, boletoPercent: 0.03724, movaValor: 312.8, adqTabValor: 71.4, totalTaxasPercent: 0.15224, valorImpostoTotal: 1350, comissaoValor: 336, boletosValor: 17.5, lucro: 2470, percentRentabilidade: 0.294, status: 'entregue', canhotoPago: true, tipoEntrega: 'FOB', formaPagamento: 'Boleto' },

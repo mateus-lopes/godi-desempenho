@@ -22,6 +22,7 @@ const navItems = [
   { to: '/motoristas', icon: 'pi-car', label: 'Motoristas' },
   { to: '/metas', icon: 'pi-flag', label: 'Metas' },
   { to: '/indicadores', icon: 'pi-chart-bar', label: 'Indicadores' },
+  { to: '/cotacoes', icon: 'pi-file-edit', label: 'Cotações' },
 ]
 
 function isActive(item: { to: string; exact?: boolean }) {

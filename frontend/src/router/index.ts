@@ -15,6 +15,7 @@ export const router = createRouter({
     { path: '/metas', name: 'metas', component: () => import('../views/MetasView.vue') },
     { path: '/indicadores', name: 'indicadores', component: () => import('../views/IndicadoresView.vue') },
     { path: '/anual', name: 'anual', component: () => import('../views/AnualView.vue') },
+    { path: '/cotacoes', name: 'cotacoes', component: () => import('../views/CotacoesView.vue') },
   ],
 })
 
