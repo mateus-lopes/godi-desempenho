@@ -430,7 +430,7 @@ const opcoesMotorista = mockMotoristas.map(m => ({ label: m.nome, value: m.id })
   <div class="page" @click="hideAllMenus">
 
     <!-- Cabeçalho -->
-    <div class="page-header">
+    <div class="page-header" style="justify-content:flex-end">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
 
         <!-- Filtro por situação -->
