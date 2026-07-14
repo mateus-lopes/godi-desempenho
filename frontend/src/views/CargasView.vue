@@ -669,8 +669,7 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
           <i class="pi pi-download" />
           Exportar CSV
         </button>
-        <Button label="Nova Carga" icon="pi pi-plus" outlined @click.stop="abrirDialog" />
-        <Button label="Adicionar Linha" icon="pi pi-plus-circle" @click.stop="addRow" />
+        <Button label="Nova Carga" icon="pi pi-plus" @click.stop="abrirDialog" />
       </div>
     </div>
 
