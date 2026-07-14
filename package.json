@@ -1,0 +1,11 @@
+{
+  "name": "thiago-desempenho",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:backend": "pnpm --filter @thiago/backend dev",
+    "dev:frontend": "pnpm --filter @thiago/frontend dev",
+    "test:core": "pnpm --filter @thiago/core test"
+  },
+  "packageManager": "pnpm@11.11.0"
+}
