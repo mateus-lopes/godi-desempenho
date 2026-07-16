@@ -14,7 +14,14 @@ import { notificacoesRouter } from "./modules/notificacoes/notificacoes.routes";
 
 export const app = express();
 
-app.use(cors({ origin: env.CORS_ORIGIN }));
+const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim())
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) cb(null, true)
+    else cb(new Error('Not allowed by CORS'))
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Rotas públicas

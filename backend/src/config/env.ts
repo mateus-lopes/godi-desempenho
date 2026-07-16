@@ -6,7 +6,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatório"),
   JWT_SECRET: z.string().min(1, "JWT_SECRET é obrigatório"),
-  CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  CORS_ORIGIN: z.string().default("http://localhost:5173,https://godidesempenho.netlify.app"),
 });
 
 export const env = envSchema.parse(process.env);
