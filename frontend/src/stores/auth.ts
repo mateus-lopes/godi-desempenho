@@ -1,22 +1,29 @@
 import { defineStore } from "pinia";
-
-const TOKEN_STORAGE_KEY = "thiago_auth_token";
+import { api } from "../services/api";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    token: localStorage.getItem(TOKEN_STORAGE_KEY) as string | null,
+    isAuthenticated: false,
+    sessionChecked: false,
   }),
-  getters: {
-    isAuthenticated: (state) => Boolean(state.token),
-  },
   actions: {
-    setToken(token: string) {
-      this.token = token;
-      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    async checkSession() {
+      try {
+        await api.get("/auth/me");
+        this.isAuthenticated = true;
+      } catch {
+        this.isAuthenticated = false;
+      } finally {
+        this.sessionChecked = true;
+      }
     },
-    logout() {
-      this.token = null;
-      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    setAuthenticated() {
+      this.isAuthenticated = true;
+      this.sessionChecked = true;
+    },
+    async logout() {
+      try { await api.post("/auth/logout"); } catch { /* ignora erro de rede */ }
+      this.isAuthenticated = false;
     },
   },
 });

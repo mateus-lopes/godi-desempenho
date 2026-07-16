@@ -7,17 +7,23 @@ export interface AuthRequest extends Request {
 }
 
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction): void {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Token não fornecido" });
+  // Lê token do cookie HttpOnly (primário) ou header Authorization (fallback)
+  const token: string | undefined =
+    req.cookies?.auth_token ??
+    (req.headers.authorization?.startsWith("Bearer ")
+      ? req.headers.authorization.slice(7)
+      : undefined);
+
+  if (!token) {
+    res.status(401).json({ error: "Não autenticado" });
     return;
   }
-  const token = header.slice(7);
+
   try {
     const payload = jwt.verify(token, env.JWT_SECRET) as unknown as { sub: number; email: string };
     req.userId = Number(payload.sub);
     next();
   } catch {
-    res.status(401).json({ error: "Token inválido ou expirado" });
+    res.status(401).json({ error: "Sessão expirada" });
   }
 }

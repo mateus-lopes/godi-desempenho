@@ -16,12 +16,12 @@ const { toastMsg } = useToast()
 const isPublic = computed(() => Boolean(route.meta.public))
 
 // Carrega notificações quando o usuário está autenticado
-watch(() => auth.token, (token) => {
-  if (token) notifStore.carregar()
+watch(() => auth.isAuthenticated, (authenticated) => {
+  if (authenticated) notifStore.carregar()
 }, { immediate: true })
 
-function logout() {
-  auth.logout()
+async function logout() {
+  await auth.logout()
   router.push('/login')
 }
 

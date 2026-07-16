@@ -1,5 +1,7 @@
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import { authRouter } from "./modules/auth/auth.routes";
 import { healthRouter } from "./modules/health/health.routes";
@@ -14,21 +16,25 @@ import { notificacoesRouter } from "./modules/notificacoes/notificacoes.routes";
 
 export const app = express();
 
-const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim())
+const allowedOrigins = env.CORS_ORIGIN.split(',').map(o => o.trim());
+
+// Segurança: headers HTTP, CORS restrito, cookie parser, body limit
+app.use(helmet());
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) cb(null, true)
-    else cb(new Error('Not allowed by CORS'))
+    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    else cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
-app.use(express.json());
+app.use(cookieParser());
+app.use(express.json({ limit: '10kb' }));
 
 // Rotas públicas
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 
-// Rotas protegidas (cada router aplica requireAuth internamente)
+// Rotas protegidas
 app.use("/api/clientes", clientesRouter);
 app.use("/api/motoristas", motoristasRouter);
 app.use("/api/cargas", cargasRouter);
@@ -39,6 +45,6 @@ app.use("/api/cotacoes", cotacoesRouter);
 app.use("/api/notificacoes", notificacoesRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err);
+  if (env.NODE_ENV !== 'production') console.error(err);
   res.status(500).json({ error: "Erro interno" });
 });

@@ -5,7 +5,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatório"),
-  JWT_SECRET: z.string().min(1, "JWT_SECRET é obrigatório"),
+  JWT_SECRET: z.string().min(32, "JWT_SECRET deve ter no mínimo 32 caracteres"),
   CORS_ORIGIN: z.string().default("http://localhost:5173,https://godidesempenho.netlify.app"),
 });
 

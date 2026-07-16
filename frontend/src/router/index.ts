@@ -20,8 +20,12 @@ export const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
+  // Na primeira navegação, verifica o cookie com o servidor
+  if (!auth.sessionChecked) {
+    await auth.checkSession()
+  }
   if (!to.meta.public && !auth.isAuthenticated) {
     return { name: 'login' }
   }
