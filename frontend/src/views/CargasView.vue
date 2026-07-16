@@ -291,7 +291,7 @@ function autoFit(colKey: string) {
 
 // ── Colunas visíveis / ocultas ────────────────────────────────────────────
 
-const hiddenCols = reactive(new Set<string>())
+const hiddenCols = reactive(new Set<string>(['coPercent', 'impostoPercent']))
 const visibleCols = computed(() => COLS.filter(c => !hiddenCols.has(c.key)))
 
 const totalTableWidth = computed(() =>
@@ -733,6 +733,7 @@ function skBarWidth(col: ColDef): string {
 // ── Modal ─────────────────────────────────────────────────────────────────
 
 const dialogAberto = ref(false)
+const showAdvanced = ref(false)
 const novaCargaBase = () => ({
   dataObj: new Date(), cte: '', origem: '', destino: '',
   clienteId: null as number | null, motoristaId: null as number | null,
@@ -756,7 +757,7 @@ const calc = computed(() => {
   return { adqTab, boletoP, totalTaxas, valorImpostoTotal, seguroValor, comissaoValor, lucro, rentabilidade: lucro / ve }
 })
 
-function abrirDialog() { Object.assign(form, novaCargaBase()); dialogAberto.value = true }
+function abrirDialog() { Object.assign(form, novaCargaBase()); showAdvanced.value = false; dialogAberto.value = true }
 
 // ── Exportar CSV ──────────────────────────────────────────────────────────
 
@@ -1227,12 +1228,20 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
       <div class="form-field"><label>Valor NF (R$)</label><InputNumber v-model="form.valorNf" mode="currency" currency="BRL" locale="pt-BR" :minFractionDigits="2" fluid /></div>
       <div class="form-field"><label>Comissão (%)</label><InputNumber v-model="form.percentComissao" suffix="%" :minFractionDigits="1" fluid /></div>
       <div class="form-field"><label>ICMS (%)</label><InputNumber v-model="form.icmsPercent" suffix="%" :minFractionDigits="1" fluid /></div>
-      <div class="form-field"><label>C.O (%)</label><InputNumber v-model="form.coPercent" suffix="%" :minFractionDigits="1" fluid /></div>
-      <div class="form-field"><label>Imposto (%)</label><InputNumber v-model="form.impostoPercent" suffix="%" :minFractionDigits="1" fluid /></div>
       <div class="form-field"><label>Seguro (%)</label><InputNumber v-model="form.seguroPercent" suffix="%" :minFractionDigits="2" fluid /></div>
       <div class="form-field"><label>Dias para Pagamento</label><InputNumber v-model="form.diasPagamento" suffix=" dias" fluid /></div>
       <div class="form-field"><label>Tipo de Entrega</label><Select v-model="form.tipoEntrega" :options="opcoesTipoEntrega" optionLabel="label" optionValue="value" placeholder="CIF / FOB" fluid /></div>
       <div class="form-field form-full"><label>Forma de Pagamento</label><Select v-model="form.formaPagamento" :options="opcoesFormaPagamento" optionLabel="label" optionValue="value" fluid /></div>
+    </div>
+
+    <!-- Configurações avançadas -->
+    <button class="advanced-toggle" @click="showAdvanced = !showAdvanced">
+      <i class="pi" :class="showAdvanced ? 'pi-chevron-down' : 'pi-chevron-right'" />
+      Configurações avançadas
+    </button>
+    <div v-if="showAdvanced" class="form-2col advanced-fields">
+      <div class="form-field"><label>C.O (%)</label><InputNumber v-model="form.coPercent" suffix="%" :minFractionDigits="1" fluid /></div>
+      <div class="form-field"><label>Imposto (%)</label><InputNumber v-model="form.impostoPercent" suffix="%" :minFractionDigits="1" fluid /></div>
     </div>
     <div class="calc-box" v-if="calc">
       <h4><i class="pi pi-calculator" style="margin-right:6px;color:#7c3aed" />Cálculo em tempo real</h4>
@@ -1533,5 +1542,18 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
   0%   { background-position:  200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ── Configurações avançadas ─────────────────────────────────── */
+.advanced-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 12px 0 0; padding: 0;
+  border: none; background: none;
+  font-size: 12.5px; color: #64748b;
+  cursor: pointer; font-family: inherit;
+  transition: color 0.14s;
+}
+.advanced-toggle:hover { color: #7c3aed; }
+.advanced-toggle .pi { font-size: 11px; }
+.advanced-fields { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
 
 </style>

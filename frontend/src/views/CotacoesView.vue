@@ -229,7 +229,7 @@ function startResize(e: MouseEvent, colKey: string) {
   document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp)
 }
 
-const hiddenCols = reactive(new Set<string>())
+const hiddenCols = reactive(new Set<string>(['coPercent', 'impostoPercent']))
 const visibleCols = computed(() => COLS.filter(c => !hiddenCols.has(c.key)))
 const totalTableWidth = computed(() => 52 + visibleCols.value.reduce((s, c) => s + (colWidths[c.key] ?? c.width), 0))
 const hiddenColsList = computed(() => COLS.filter(c => hiddenCols.has(c.key)))
@@ -467,6 +467,7 @@ async function confirmarConverter() {
 // ── Modal nova cotação ─────────────────────────────────────────────────────
 
 const dialogAberto = ref(false)
+const showAdvanced = ref(false)
 const novaBase = () => ({
   dataObj: new Date(), clienteId: null as number | null,
   origem: '', destino: '', km: null as number | null, tipoVeiculo: '',
@@ -489,7 +490,7 @@ const calc = computed(() => {
   return { boletoP, totalTaxas, valorImpostoTotal, seguroValor, adqTab, comissaoValor, lucro, rentabilidade: lucro / ve }
 })
 
-function abrirDialog() { Object.assign(form, novaBase()); dialogAberto.value = true }
+function abrirDialog() { Object.assign(form, novaBase()); showAdvanced.value = false; dialogAberto.value = true }
 
 async function salvarModal() {
   if (!calc.value || form.clienteId == null) return
@@ -887,10 +888,18 @@ const opcoesMotorista = computed(() => motoristas.value.map(m => ({ label: m.nom
       <div class="form-field"><label>Valor NF (R$)</label><InputNumber v-model="form.valorNf" mode="currency" currency="BRL" locale="pt-BR" :minFractionDigits="2" fluid /></div>
       <div class="form-field"><label>Comissão (%)</label><InputNumber v-model="form.percentComissao" suffix="%" :minFractionDigits="1" fluid /></div>
       <div class="form-field"><label>ICMS (%)</label><InputNumber v-model="form.icmsPercent" suffix="%" :minFractionDigits="1" fluid /></div>
-      <div class="form-field"><label>C.O (%)</label><InputNumber v-model="form.coPercent" suffix="%" :minFractionDigits="1" fluid /></div>
-      <div class="form-field"><label>Imposto (%)</label><InputNumber v-model="form.impostoPercent" suffix="%" :minFractionDigits="1" fluid /></div>
       <div class="form-field"><label>Seguro (%)</label><InputNumber v-model="form.seguroPercent" suffix="%" :minFractionDigits="3" fluid /></div>
       <div class="form-field form-full"><label>Dias para Pagamento</label><InputNumber v-model="form.diasPagamento" suffix=" dias" fluid /></div>
+    </div>
+
+    <!-- Configurações avançadas -->
+    <button class="advanced-toggle" @click="showAdvanced = !showAdvanced">
+      <i class="pi" :class="showAdvanced ? 'pi-chevron-down' : 'pi-chevron-right'" />
+      Configurações avançadas
+    </button>
+    <div v-if="showAdvanced" class="form-2col advanced-fields">
+      <div class="form-field"><label>C.O (%)</label><InputNumber v-model="form.coPercent" suffix="%" :minFractionDigits="1" fluid /></div>
+      <div class="form-field"><label>Imposto (%)</label><InputNumber v-model="form.impostoPercent" suffix="%" :minFractionDigits="1" fluid /></div>
     </div>
 
     <div class="calc-box" v-if="calc">
@@ -1077,5 +1086,18 @@ const opcoesMotorista = computed(() => motoristas.value.map(m => ({ label: m.nom
   0%   { background-position:  200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ── Configurações avançadas ─────────────────────────────────── */
+.advanced-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 12px 0 0; padding: 0;
+  border: none; background: none;
+  font-size: 12.5px; color: #64748b;
+  cursor: pointer; font-family: inherit;
+  transition: color 0.14s;
+}
+.advanced-toggle:hover { color: #7c3aed; }
+.advanced-toggle .pi { font-size: 11px; }
+.advanced-fields { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
 
 </style>
