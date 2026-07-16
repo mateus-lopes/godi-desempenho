@@ -3,12 +3,14 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useNotifStore } from './stores/notifications'
+import { useAutosaveStore } from './stores/autosave'
 import { useToast } from './composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const notifStore = useNotifStore()
+const autosave = useAutosaveStore()
 const { toastMsg } = useToast()
 
 const isPublic = computed(() => Boolean(route.meta.public))
@@ -167,6 +169,22 @@ if (typeof window !== 'undefined') {
           </div>
         </div>
       </div>
+
+      <!-- Indicador de autosave -->
+      <Transition name="autosave-fade">
+        <div v-if="autosave.status !== 'idle'" class="autosave-chip" :class="autosave.status">
+          <i class="pi"
+            :class="{
+              'pi-spin pi-sync': autosave.status === 'saving',
+              'pi-check-circle': autosave.status === 'saved',
+              'pi-exclamation-triangle': autosave.status === 'error',
+            }"
+          />
+          <span v-if="autosave.status === 'saving'">Salvando...</span>
+          <span v-else-if="autosave.status === 'saved'">Salvo</span>
+          <span v-else>Erro ao salvar</span>
+        </div>
+      </Transition>
 
       <button class="nav-logout" @click="logout" title="Sair">
         <i class="pi pi-sign-out" />
@@ -339,6 +357,21 @@ if (typeof window !== 'undefined') {
   transition: background 0.12s;
 }
 .notif-footer:hover { background: #f3e8ff; }
+
+/* ── Autosave chip ── */
+.autosave-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 99px;
+  font-size: 11.5px; font-weight: 500; white-space: nowrap;
+  flex-shrink: 0;
+}
+.autosave-chip .pi { font-size: 12px; }
+.autosave-chip.saving { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.autosave-chip.saved  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.autosave-chip.error  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+.autosave-fade-enter-active, .autosave-fade-leave-active { transition: opacity 0.25s, transform 0.25s; }
+.autosave-fade-enter-from, .autosave-fade-leave-to { opacity: 0; transform: translateY(-4px); }
 
 /* ── Toast global ── */
 .toast-global {

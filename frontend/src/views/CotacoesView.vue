@@ -10,8 +10,10 @@ import { api } from '../services/api'
 import AppLoader from '../components/AppLoader.vue'
 import { useToast } from '../composables/useToast'
 import { getRowCache, setRowCache } from '../composables/useRowCache'
+import { useAutosaveStore } from '../stores/autosave'
 
 const { showToast } = useToast()
+const autosave = useAutosaveStore()
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 
@@ -130,17 +132,61 @@ function activate(rowId: number, col: string) {
   })
 }
 
-async function deactivate(row: Row) {
-  recalc(row); activeCell.value = null
-  const required = row.clienteId != null && row.valorEmpresa != null && row.valorMotorista != null
-  if (!required) return
-  if (row.id < 0) {
-    const { data } = await api.post('/cotacoes', rowToApiPayload(row))
-    const idx = rows.findIndex(r => r.id === row.id)
-    if (idx !== -1) Object.assign(rows[idx], apiToRow(data))
-  } else {
-    await api.put(`/cotacoes/${row.id}`, rowToApiPayload(row))
+// ── Autosave ──────────────────────────────────────────────────────────────
+
+const pendingTimers = new Map<number, ReturnType<typeof setTimeout>>()
+
+async function saveRow(row: Row) {
+  // Nova linha sem campos obrigatórios — aguarda preenchimento
+  if (row.id < 0 && (row.clienteId == null || row.valorEmpresa == null || row.valorMotorista == null)) return
+  autosave.markSaving()
+  try {
+    if (row.id < 0) {
+      const { data } = await api.post('/cotacoes', rowToApiPayload(row))
+      const idx = rows.findIndex(r => r.id === row.id)
+      if (idx !== -1) Object.assign(rows[idx], apiToRow(data))
+    } else {
+      await api.put(`/cotacoes/${row.id}`, rowToApiPayload(row))
+    }
+    autosave.markSaved()
+  } catch {
+    autosave.markError()
   }
+}
+
+function scheduleSave(row: Row) {
+  const t = pendingTimers.get(row.id)
+  if (t) clearTimeout(t)
+  pendingTimers.set(row.id, setTimeout(() => {
+    pendingTimers.delete(row.id)
+    saveRow(row)
+  }, 1500))
+}
+
+function onCellChange(row: Row) {
+  recalc(row)
+  scheduleSave(row)
+}
+
+function flushPending() {
+  for (const [rowId, t] of pendingTimers) {
+    clearTimeout(t)
+    const row = rows.find(r => r.id === rowId)
+    if (row) saveRow(row)
+  }
+  pendingTimers.clear()
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'hidden') flushPending()
+}
+
+async function deactivate(row: Row) {
+  recalc(row)
+  activeCell.value = null
+  const t = pendingTimers.get(row.id)
+  if (t) { clearTimeout(t); pendingTimers.delete(row.id) }
+  await saveRow(row)
 }
 function isActive(rowId: number, col: string) { return activeCell.value?.rowId === rowId && activeCell.value?.col === col }
 
@@ -507,6 +553,7 @@ let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
   document.addEventListener('keydown', globalKeydown)
   document.addEventListener('click', hideAllMenus)
+  document.addEventListener('visibilitychange', onVisibilityChange)
   carregarDados()
   nextTick(() => {
     if (excelWrap.value) {
@@ -522,6 +569,8 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', globalKeydown)
   document.removeEventListener('click', hideAllMenus)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  flushPending()
   resizeObserver?.disconnect()
 })
 
@@ -702,26 +751,26 @@ const opcoesMotorista = computed(() => motoristas.value.map(m => ({ label: m.nom
               <template v-else>
                 <input v-if="col.type === 'text'" class="cell-input" type="text"
                   :value="(row as any)[col.key]"
-                  @input="(row as any)[col.key] = ($event.target as HTMLInputElement).value"
+                  @input="(row as any)[col.key] = ($event.target as HTMLInputElement).value; onCellChange(row)"
                   @blur="deactivate(row)" @keydown.tab="onTab($event, row, col.key)"
                   @keydown.enter="onEnter($event, row, col.key)" @keydown.escape.stop="onEscape" />
 
                 <input v-else-if="col.type === 'date'" class="cell-input" type="date"
                   :value="(row as any)[col.key]"
-                  @input="(row as any)[col.key] = ($event.target as HTMLInputElement).value"
+                  @input="(row as any)[col.key] = ($event.target as HTMLInputElement).value; onCellChange(row)"
                   @blur="deactivate(row)" @keydown.tab="onTab($event, row, col.key)"
                   @keydown.enter="onEnter($event, row, col.key)" @keydown.escape.stop="onEscape" />
 
                 <input v-else-if="['currency','percent','number'].includes(col.type)" class="cell-input" type="number"
                   :step="col.type === 'currency' ? '0.01' : col.type === 'percent' ? '0.1' : '1'"
                   :value="(row as any)[col.key]"
-                  @input="(row as any)[col.key] = parseFloat(($event.target as HTMLInputElement).value) || 0"
+                  @input="(row as any)[col.key] = parseFloat(($event.target as HTMLInputElement).value) || 0; onCellChange(row)"
                   @blur="deactivate(row)" @keydown.tab="onTab($event, row, col.key)"
                   @keydown.enter="onEnter($event, row, col.key)" @keydown.escape.stop="onEscape" />
 
                 <select v-else-if="col.type === 'select-cliente'" class="cell-input cell-select"
                   :value="(row as any)[col.key]"
-                  @change="(row as any)[col.key] = parseInt(($event.target as HTMLSelectElement).value)"
+                  @change="(row as any)[col.key] = parseInt(($event.target as HTMLSelectElement).value); onCellChange(row)"
                   @blur="deactivate(row)" @keydown.tab="onTab($event, row, col.key)"
                   @keydown.escape.stop="onEscape">
                   <option value="">—</option>

@@ -92,12 +92,10 @@ function openEditMeta(cl: { id: number; nome: string }) {
 
 async function salvarMeta() {
   if (!editingCliente.value) return
-  const [ano, mes] = mesSelecionado.value.split('-').map(Number)
   try {
     await api.put('/metas', {
       clienteId: editingCliente.value.id,
-      mes,
-      ano,
+      mes: mesSelecionado.value,
       valorMeta: novaMetaValor.value,
     })
     await carregarDados()
