@@ -45,5 +45,5 @@ authRouter.post("/logout", (_req, res) => {
 });
 
 authRouter.get("/me", requireAuth, (req: any, res) => {
-  res.json({ userId: req.userId });
+  res.json({ userId: req.userId, role: req.userRole });
 });

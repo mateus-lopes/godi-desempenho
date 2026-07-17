@@ -13,6 +13,7 @@ import { indicadoresRouter } from "./modules/indicadores/indicadores.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { cotacoesRouter } from "./modules/cotacoes/cotacoes.routes";
 import { notificacoesRouter } from "./modules/notificacoes/notificacoes.routes";
+import { usersRouter } from "./modules/users/users.routes";
 
 export const app = express();
 
@@ -43,6 +44,7 @@ app.use("/api/indicadores", indicadoresRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/cotacoes", cotacoesRouter);
 app.use("/api/notificacoes", notificacoesRouter);
+app.use("/api/users", usersRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   if (env.NODE_ENV !== 'production') console.error(err);

@@ -121,6 +121,20 @@ if (typeof window !== 'undefined') {
           <i :class="`pi ${item.icon}`" />
           {{ item.label }}
         </a>
+
+        <!-- Item de gerenciamento de usuários — só admin -->
+        <template v-if="auth.isAdmin">
+          <div class="nav-sep" />
+          <a
+            class="nav-item nav-item-admin"
+            :class="{ active: route.path === '/usuarios' }"
+            @click="router.push('/usuarios')"
+            title="Gerenciar usuários do sistema"
+          >
+            <i class="pi pi-shield" />
+            Usuários
+          </a>
+        </template>
       </nav>
 
       <!-- Sininho de notificações -->
@@ -243,6 +257,9 @@ if (typeof window !== 'undefined') {
   width: 1px; height: 22px; background: #e2e8f0;
   align-self: center; flex-shrink: 0; margin: 0 4px;
 }
+
+.nav-item-admin { color: #7c3aed !important; }
+.nav-item-admin .pi { color: #7c3aed !important; }
 
 /* ── Badge de desenvolvimento ── */
 .dev-badge {

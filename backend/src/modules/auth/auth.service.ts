@@ -13,5 +13,5 @@ export async function login(email: string, senha: string): Promise<string> {
   const senhaOk = await bcrypt.compare(senha, user.passwordHash);
   if (!senhaOk) throw new Error("Credenciais inválidas");
 
-  return jwt.sign({ sub: user.id, email: user.email }, env.JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ sub: user.id, email: user.email, role: user.role }, env.JWT_SECRET, { expiresIn: "7d" });
 }

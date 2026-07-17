@@ -17,16 +17,19 @@ export const router = createRouter({
     { path: '/anual', name: 'anual', component: () => import('../views/AnualView.vue') },
     { path: '/cotacoes', name: 'cotacoes', component: () => import('../views/CotacoesView.vue') },
     { path: '/notificacoes', name: 'notificacoes', component: () => import('../views/NotificacoesView.vue') },
+    { path: '/usuarios', name: 'usuarios', component: () => import('../views/UsuariosView.vue'), meta: { adminOnly: true } },
   ],
 })
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
-  // Na primeira navegação, verifica o cookie com o servidor
   if (!auth.sessionChecked) {
     await auth.checkSession()
   }
   if (!to.meta.public && !auth.isAuthenticated) {
     return { name: 'login' }
+  }
+  if (to.meta.adminOnly && !auth.isAdmin) {
+    return { name: 'home' }
   }
 })
