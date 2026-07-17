@@ -65,9 +65,15 @@ const showNotif = ref(false)
 
 function fecharNotif() { showNotif.value = false }
 
+// ── Menu mobile ───────────────────────────────────────────────────────────
+const showMobileMenu = ref(false)
+
+// Fecha tudo ao navegar
+watch(route, () => { showMobileMenu.value = false; showDashDropdown.value = false; showNotif.value = false })
+
 // Fecha dropdowns ao clicar fora
 if (typeof window !== 'undefined') {
-  window.addEventListener('click', () => { fecharNotif(); fecharDashDropdown() })
+  window.addEventListener('click', () => { fecharNotif(); fecharDashDropdown(); showMobileMenu.value = false })
 }
 </script>
 
@@ -135,6 +141,39 @@ if (typeof window !== 'undefined') {
             Usuários
           </a>
         </template>
+      </nav>
+
+      <!-- Hambúrguer (só mobile) -->
+      <button class="hamburger-btn" @click.stop="showMobileMenu = !showMobileMenu" title="Menu">
+        <i class="pi" :class="showMobileMenu ? 'pi-times' : 'pi-bars'" />
+      </button>
+
+      <!-- Menu mobile expandido -->
+      <nav v-if="showMobileMenu" class="mobile-menu" @click.stop>
+        <a v-for="item in dashboardDropdown" :key="item.to"
+          class="mobile-nav-item" :class="{ active: isActive(item) }"
+          @click="router.push(item.to); showMobileMenu = false"
+        >
+          <i :class="`pi ${item.icon}`" /> {{ item.label }}
+        </a>
+        <div class="mobile-nav-sep" />
+        <a v-for="item in navItems" :key="item.to"
+          class="mobile-nav-item" :class="{ active: isActive(item) }"
+          @click="router.push(item.to); showMobileMenu = false"
+        >
+          <i :class="`pi ${item.icon}`" /> {{ item.label }}
+        </a>
+        <template v-if="auth.isAdmin">
+          <div class="mobile-nav-sep" />
+          <a class="mobile-nav-item" :class="{ active: route.path === '/usuarios' }"
+            @click="router.push('/usuarios'); showMobileMenu = false">
+            <i class="pi pi-shield" /> Usuários
+          </a>
+        </template>
+        <div class="mobile-nav-sep" />
+        <a class="mobile-nav-item mobile-nav-logout" @click="logout(); showMobileMenu = false">
+          <i class="pi pi-sign-out" /> Sair
+        </a>
       </nav>
 
       <!-- Sininho de notificações -->
@@ -260,6 +299,61 @@ if (typeof window !== 'undefined') {
 
 .nav-item-admin { color: #7c3aed !important; }
 .nav-item-admin .pi { color: #7c3aed !important; }
+
+/* ── Hambúrguer: invisível em desktop ── */
+.hamburger-btn { display: none; }
+
+/* ══════════════════════════════════════════════════════
+   MOBILE — max-width: 768px (não altera nada acima)
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .topbar { padding: 0 12px; position: relative; }
+  .topbar-brand { flex: 1; }
+  .topbar-nav   { display: none; }
+  .dev-badge    { display: none; }
+  .autosave-chip { display: none; }
+  .nav-logout   { display: none; }  /* logout fica no mobile-menu */
+
+  .hamburger-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; margin-left: 4px;
+    border: 1px solid #e2e8f0; border-radius: 9px;
+    background: white; cursor: pointer; flex-shrink: 0;
+    color: #64748b; font-size: 16px;
+    transition: all 0.14s;
+  }
+  .hamburger-btn:hover { border-color: #7c3aed; color: #7c3aed; background: #f3e8ff; }
+
+  /* Menu mobile: cai abaixo do topbar sticky */
+  .mobile-menu {
+    display: flex; flex-direction: column; gap: 2px;
+    position: absolute; top: 52px; left: 0; right: 0;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    z-index: 300; padding: 8px;
+  }
+
+  .mobile-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: #374151;
+    text-decoration: none; transition: background 0.12s, color 0.12s;
+  }
+  .mobile-nav-item .pi { font-size: 15px; width: 18px; text-align: center; color: #94a3b8; flex-shrink: 0; }
+  .mobile-nav-item:hover { background: #f8fafc; }
+  .mobile-nav-item.active { background: #ede9fe; color: #7c3aed; font-weight: 600; }
+  .mobile-nav-item.active .pi { color: #7c3aed; }
+
+  .mobile-nav-logout { color: #ef4444; }
+  .mobile-nav-logout .pi { color: #ef4444; }
+  .mobile-nav-logout:hover { background: #fef2f2; }
+
+  .mobile-nav-sep { height: 1px; background: #f1f5f9; margin: 4px 0; }
+
+  /* Dropdown de notificações: não ultrapassa a tela */
+  .notif-dropdown { width: calc(100vw - 32px); right: -8px; }
+}
 
 /* ── Badge de desenvolvimento ── */
 .dev-badge {

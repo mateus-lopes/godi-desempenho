@@ -842,7 +842,7 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
           >{{ mes }}</button>
         </div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div class="toolbar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button
           class="toolbar-btn"
           :class="{ 'toolbar-btn-active': showFilters }"
@@ -1556,4 +1556,8 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
 .advanced-toggle .pi { font-size: 11px; }
 .advanced-fields { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
 
+@media (max-width: 768px) {
+  :deep(.p-dialog) { width: 95vw !important; max-width: 95vw !important; }
+  :deep(.p-dialog-content) { max-height: 72vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+}
 </style>

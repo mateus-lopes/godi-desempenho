@@ -355,4 +355,11 @@ const chartOption = computed(() => ({
 .scroll-list::-webkit-scrollbar-track { background: transparent; }
 .scroll-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
 .scroll-list::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+@media (max-width: 768px) {
+  .wrap { padding: 0 12px; }
+  .greeting-header  { flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+  .periodo-selector { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+  .greeting-title   { font-size: 18px; }
+}
 </style>

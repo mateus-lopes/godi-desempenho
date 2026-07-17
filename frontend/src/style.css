@@ -219,3 +219,38 @@ body {
 .canhoto-check {
   width: 18px; height: 18px; cursor: pointer; accent-color: #7c3aed;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE — max-width: 768px  (NÃO altera nada acima desta linha)
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* KPI: 4 cols → 2 cols */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Dashboard rows: empilha em coluna única */
+  .dash-row,
+  .dash-row.cols-2,
+  .dash-row.cols-2-1 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Cards: reduz padding */
+  .card { padding: 14px 16px; }
+  .kpi-card { padding: 14px 16px; }
+  .section-title { font-size: 14px; }
+
+  /* Page header: wraps title + botão novo em mobile */
+  .page-header { flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+  .page-title  { font-size: 17px; }
+
+  /* Form dialogs: 2 colunas → 1 coluna */
+  .form-2col {
+    grid-template-columns: 1fr;
+  }
+
+  /* Calc-box: 3 colunas internas → 1 coluna (override inline style via attr) */
+  .calc-box > div { grid-template-columns: 1fr !important; }
+}

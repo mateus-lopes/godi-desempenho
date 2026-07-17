@@ -1100,4 +1100,9 @@ const opcoesMotorista = computed(() => motoristas.value.map(m => ({ label: m.nom
 .advanced-toggle .pi { font-size: 11px; }
 .advanced-fields { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
 
+@media (max-width: 768px) {
+  :deep(.p-dialog) { width: 95vw !important; max-width: 95vw !important; }
+  :deep(.p-dialog-content) { max-height: 72vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+}
+
 </style>

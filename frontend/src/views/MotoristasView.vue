@@ -269,4 +269,8 @@ async function remove(id: number) {
 
 .modal-body { padding: 4px 0 8px; }
 .modal-erro { margin-top: 10px; font-size: 12.5px; color: #dc2626; }
+
+@media (max-width: 768px) {
+  :deep(.p-dialog) { width: calc(100vw - 32px) !important; max-width: calc(100vw - 32px) !important; }
+}
 </style>

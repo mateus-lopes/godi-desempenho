@@ -238,4 +238,9 @@ function formatarData(iso: string) {
 .field label { font-size: 13px; font-weight: 500; color: #374151; }
 .form-erro { font-size: 12.5px; color: #ef4444; margin: 0; }
 .w-full { width: 100%; }
+
+@media (max-width: 768px) {
+  .page { padding: 16px; }
+  :deep(.p-dialog) { width: calc(100vw - 32px) !important; max-width: calc(100vw - 32px) !important; }
+}
 </style>
