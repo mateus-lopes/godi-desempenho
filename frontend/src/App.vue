@@ -359,8 +359,8 @@ if (typeof window !== 'undefined') {
 .dev-badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 9px;
-  background: #fef3c7; color: #92400e;
-  border: 1px solid #fcd34d;
+  background: #dbeafe; color: #1e40af;
+  border: 1px solid #93c5fd;
   border-radius: 99px;
   font-size: 11px; font-weight: 600;
   letter-spacing: 0.01em;
