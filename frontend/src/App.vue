@@ -236,6 +236,9 @@ if (typeof window !== 'undefined') {
           <span v-if="autosave.status === 'saving'">Salvando...</span>
           <span v-else-if="autosave.status === 'saved'">Salvo</span>
           <span v-else>Erro ao salvar</span>
+          <span v-if="autosave.status === 'error'" class="autosave-error-tooltip">
+            {{ autosave.errorMessage || 'Erro desconhecido' }}
+          </span>
         </div>
       </Transition>
 
@@ -479,7 +482,27 @@ if (typeof window !== 'undefined') {
 .autosave-chip .pi { font-size: 12px; }
 .autosave-chip.saving { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
 .autosave-chip.saved  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-.autosave-chip.error  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.autosave-chip.error  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; position: relative; }
+
+.autosave-error-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #1e293b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 400;
+  padding: 5px 10px;
+  border-radius: 6px;
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.4;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  pointer-events: none;
+}
+.autosave-chip.error:hover .autosave-error-tooltip { display: block; }
 
 .autosave-fade-enter-active, .autosave-fade-leave-active { transition: opacity 0.25s, transform 0.25s; }
 .autosave-fade-enter-from, .autosave-fade-leave-to { opacity: 0; transform: translateY(-4px); }

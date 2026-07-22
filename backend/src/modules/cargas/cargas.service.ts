@@ -10,9 +10,9 @@ import { motoristas } from "../../db/schema/motoristas";
 
 export const createCargaSchema = z.object({
   data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  cte: z.string().optional(),
-  origem: z.string().optional(),
-  destino: z.string().optional(),
+  cte: z.string().nullish(),
+  origem: z.string().nullish(),
+  destino: z.string().nullish(),
   clienteId: z.number().int().positive(),
   motoristaId: z.number().int().positive(),
   valorMotorista: z.number().positive(),
@@ -26,8 +26,8 @@ export const createCargaSchema = z.object({
   percentComissao: z.number().min(0).max(1),
   status: z.enum(["em_andamento", "entregue"]).default("em_andamento"),
   canhotoPago: z.boolean().default(false),
-  tipoEntrega: z.string().optional(),
-  formaPagamento: z.string().optional(),
+  tipoEntrega: z.string().nullish(),
+  formaPagamento: z.string().nullish(),
 });
 
 export const updateCargaSchema = createCargaSchema.partial();
@@ -177,7 +177,15 @@ export async function atualizarCarga(id: number, data: z.infer<typeof updateCarg
 
   const merged = { ...existing, ...data, valorNf: data.valorNf ?? existing.valorNf };
   const full = createCargaSchema.parse(merged);
-  const [row] = await db.update(cargas).set(toDbValues(full)).where(eq(cargas.id, id)).returning();
+  // Não sobrescrever status/canhotoPago a menos que vieram explicitamente no body —
+  // esses campos têm endpoint próprio (PATCH) e incluí-los cria race condition.
+  const { status: dbStatus, canhotoPago: dbCanhotoPago, ...baseUpdate } = toDbValues(full);
+  const updateSet = {
+    ...baseUpdate,
+    ...(data.status !== undefined && { status: dbStatus }),
+    ...(data.canhotoPago !== undefined && { canhotoPago: dbCanhotoPago }),
+  };
+  const [row] = await db.update(cargas).set(updateSet).where(eq(cargas.id, id)).returning();
   if (!row) return null;
   return buscarCarga(id);
 }

@@ -16,3 +16,11 @@ export const api = axios.create({
   // withCredentials necessário apenas para cross-origin (sem proxy Nginx)
   withCredentials: !baseURL.startsWith("/"),
 });
+
+export function extractApiError(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    return err.response?.data?.error ?? err.message ?? 'Erro desconhecido'
+  }
+  if (err instanceof Error) return err.message
+  return 'Erro desconhecido'
+}

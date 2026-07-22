@@ -6,7 +6,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
-import { api } from '../services/api'
+import { api, extractApiError } from '../services/api'
 import AppLoader from '../components/AppLoader.vue'
 import { useToast } from '../composables/useToast'
 import { getRowCache, setRowCache } from '../composables/useRowCache'
@@ -29,7 +29,7 @@ interface Row {
 
 interface ColDef {
   key: string; label: string; width: number
-  type: 'text' | 'date' | 'currency' | 'percent' | 'number' | 'select-cliente' | 'select-motorista' | 'calc' | 'calc-rent' | 'status' | 'checkbox'
+  type: 'text' | 'date' | 'currency' | 'percent' | 'number' | 'select-cliente' | 'select-motorista' | 'calc' | 'calc-rent' | 'select-status' | 'select-bool'
   align?: 'right' | 'center'
 }
 
@@ -51,13 +51,13 @@ const COLS: ColDef[] = [
   { key: 'seguroPercent',        label: 'Seg%',         width: 54,  type: 'percent',         align: 'right' },
   { key: 'diasPagamento',        label: 'Dias Pag.',    width: 68,  type: 'number',          align: 'right' },
   { key: 'comissaoValor',        label: 'Comissão R$',  width: 105, type: 'calc',            align: 'right' },
-  { key: 'percentRentabilidade', label: 'Rent%',        width: 65,  type: 'calc-rent',       align: 'right' },
+  { key: 'percentRentabilidade', label: 'Rent%',        width: 65,  type: 'calc-rent',       align: 'center' },
   { key: 'lucro',                label: 'Lucro',        width: 100, type: 'calc',            align: 'right' },
-  { key: 'status',               label: 'Status',       width: 116, type: 'status' },
-  { key: 'canhotoPago',          label: 'Canhoto',      width: 68,  type: 'checkbox',        align: 'center' },
+  { key: 'status',               label: 'Status',       width: 116, type: 'select-status' },
+  { key: 'canhotoPago',          label: 'Canhoto',      width: 80,  type: 'select-bool' },
 ]
 
-const EDITABLE = COLS.filter(c => !['calc', 'calc-rent', 'status', 'checkbox'].includes(c.type)).map(c => c.key)
+const EDITABLE = COLS.filter(c => !['calc', 'calc-rent'].includes(c.type)).map(c => c.key)
 const NUMERIC_COLS = ['valorEmpresa', 'valorMotorista', 'valorNf', 'icmsPercent', 'coPercent', 'impostoPercent', 'seguroPercent', 'diasPagamento', 'percentComissao']
 
 // ── Dados ─────────────────────────────────────────────────────────────────
@@ -158,8 +158,8 @@ async function saveRow(row: Row) {
       row.percentRentabilidade = data.percentRentabilidade
     }
     autosave.markSaved()
-  } catch {
-    autosave.markError()
+  } catch (err: unknown) {
+    autosave.markError(extractApiError(err))
   }
 }
 
@@ -364,8 +364,8 @@ function filterRow(row: Row, col: ColDef, fv: string): boolean {
   switch (col.type) {
     case 'select-cliente':   return nomeCliente(row.clienteId).toLowerCase().includes(f)
     case 'select-motorista': return nomeMotorista(row.motoristaId).toLowerCase().includes(f)
-    case 'status': return (row.status === 'entregue' ? 'entregue' : 'em andamento').includes(f)
-    case 'checkbox': return f === 'sim' ? row.canhotoPago : f === 'nao' || f === 'não' ? !row.canhotoPago : true
+    case 'select-status': return (row.status === 'entregue' ? 'entregue' : 'em andamento').includes(f)
+    case 'select-bool': return f === 'sim' ? row.canhotoPago : f === 'nao' || f === 'não' ? !row.canhotoPago : true
     case 'currency': case 'calc': {
       const n = (row as any)[col.key] ?? 0
       return String(n).includes(f) || BRL(n).toLowerCase().includes(f)
@@ -488,7 +488,7 @@ function duplicateRow(rowId: number) {
 
 function clearCell(row: Row, colKey: string) {
   const col = COLS.find(c => c.key === colKey)
-  if (!col || ['calc', 'calc-rent', 'status', 'checkbox'].includes(col.type)) return
+  if (!col || ['calc', 'calc-rent', 'select-status', 'select-bool'].includes(col.type)) return
   if (col.type === 'currency' || col.type === 'number') (row as any)[colKey] = null
   else if (col.type === 'percent') (row as any)[colKey] = 0
   else (row as any)[colKey] = ''
@@ -577,9 +577,7 @@ async function ctxSetStatus(status: 'entregue' | 'em_andamento') {
   const row = rows.find(r => r.id === ctxMenu.value!.rowId)
   if (row) {
     row.status = status
-    if (row.id > 0) {
-      try { await api.patch(`/cargas/${row.id}/status`, { status }) } catch { console.error('Erro ao atualizar status') }
-    }
+    await saveRow(row)
   }
   hideCtx()
 }
@@ -619,7 +617,7 @@ function globalKeydown(e: KeyboardEvent) {
 
   // Qualquer letra abre edição
   if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-    if (!['calc', 'calc-rent', 'status', 'checkbox'].includes(col.type)) {
+    if (!['calc', 'calc-rent', 'select-status', 'select-bool'].includes(col.type)) {
       activate(row.id, col.key)
     }
   }
@@ -656,20 +654,6 @@ async function carregarDados() {
   }
 }
 
-async function toggleStatus(row: Row) {
-  const newStatus: 'entregue' | 'em_andamento' = row.status === 'entregue' ? 'em_andamento' : 'entregue'
-  row.status = newStatus
-  if (row.id > 0) {
-    try { await api.patch(`/cargas/${row.id}/status`, { status: newStatus }) } catch { console.error('Erro ao atualizar status') }
-  }
-}
-
-async function toggleCanhoto(row: Row) {
-  row.canhotoPago = !row.canhotoPago
-  if (row.id > 0) {
-    try { await api.patch(`/cargas/${row.id}/status`, { canhotoPago: row.canhotoPago }) } catch { console.error('Erro ao atualizar canhoto') }
-  }
-}
 
 watch(mesSelecionado, carregarDados)
 
@@ -716,8 +700,8 @@ function displayVal(row: Row, col: ColDef): string {
     case 'select-motorista': return nomeMotorista(v)
     case 'calc': return BRL(v)
     case 'calc-rent': return PCT(v)
-    case 'status': return v === 'entregue' ? 'Entregue' : 'Em andamento'
-    case 'checkbox': return v ? 'Sim' : 'Não'
+    case 'select-status': return v === 'entregue' ? 'Entregue' : 'Em andamento'
+    case 'select-bool': return v ? 'Sim' : 'Não'
     default: return v ?? ''
   }
 }
@@ -926,14 +910,14 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
                   <option v-for="m in motoristas" :key="m.id" :value="m.nome.toLowerCase()">{{ m.nome }}</option>
                 </select>
               </template>
-              <template v-else-if="col.type === 'status'">
+              <template v-else-if="col.type === 'select-status'">
                 <select class="filter-input" v-model="filters[col.key]">
                   <option value="">Todos</option>
                   <option value="entregue">Entregue</option>
                   <option value="em andamento">Em andamento</option>
                 </select>
               </template>
-              <template v-else-if="col.type === 'checkbox'">
+              <template v-else-if="col.type === 'select-bool'">
                 <select class="filter-input" v-model="filters[col.key]">
                   <option value="">Todos</option>
                   <option value="sim">Sim</option>
@@ -1009,22 +993,15 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
               @contextmenu.stop="showCtx($event, row, col.key)"
             >
               <!-- Display -->
-              <template v-if="!isActive(row.id, col.key) || ['calc','calc-rent','status','checkbox'].includes(col.type)">
+              <template v-if="!isActive(row.id, col.key) || ['calc','calc-rent'].includes(col.type)">
 
-                <span v-if="col.type === 'status'"
+                <span v-if="col.type === 'select-status'"
                   class="status-tag" :class="row.status"
-                  @click.stop="toggleStatus(row)"
-                  title="Clique para alternar"
                 >
                   <i :class="row.status === 'entregue' ? 'pi pi-check-circle' : 'pi pi-clock'" style="font-size:10px" />
                   {{ row.status === 'entregue' ? 'Entregue' : 'Em andamento' }}
                 </span>
 
-                <input v-else-if="col.type === 'checkbox'"
-                  type="checkbox" class="canhoto-check"
-                  :checked="row.canhotoPago"
-                  @change.stop="toggleCanhoto(row)"
-                />
 
                 <span v-else-if="col.type === 'calc-rent'"
                   class="rent" :class="rentCor(row.percentRentabilidade)">
@@ -1078,6 +1055,24 @@ const opcoesFormaPagamento = ['Boleto', 'PIX', 'Transferência'].map(v => ({ lab
                   @keydown.escape.stop="onEscape">
                   <option value="">—</option>
                   <option v-for="m in motoristas" :key="m.id" :value="m.id">{{ m.nome }}</option>
+                </select>
+
+                <select v-else-if="col.type === 'select-bool'" class="cell-input cell-select"
+                  :value="String((row as any)[col.key])"
+                  @change="(row as any)[col.key] = ($event.target as HTMLSelectElement).value === 'true'; onCellChange(row)"
+                  @blur="deactivate(row)" @keydown.tab="onTab($event, row, col.key)"
+                  @keydown.escape.stop="onEscape">
+                  <option value="false">Não</option>
+                  <option value="true">Sim</option>
+                </select>
+
+                <select v-else-if="col.type === 'select-status'" class="cell-input cell-select"
+                  :value="(row as any)[col.key]"
+                  @change="(row as any)[col.key] = ($event.target as HTMLSelectElement).value; onCellChange(row)"
+                  @blur="deactivate(row)" @keydown.tab="onTab($event, row, col.key)"
+                  @keydown.escape.stop="onEscape">
+                  <option value="em_andamento">Em andamento</option>
+                  <option value="entregue">Entregue</option>
                 </select>
               </template>
             </td>

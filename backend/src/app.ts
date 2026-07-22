@@ -47,6 +47,10 @@ app.use("/api/notificacoes", notificacoesRouter);
 app.use("/api/users", usersRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if ((err as any)?.type === 'entity.too.large' || (err as any)?.status === 413) {
+    res.status(413).json({ error: "Payload muito grande (máx. 10kb)" });
+    return;
+  }
   if (env.NODE_ENV !== 'production') console.error(err);
   res.status(500).json({ error: "Erro interno" });
 });

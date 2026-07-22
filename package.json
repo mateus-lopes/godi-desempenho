@@ -5,7 +5,9 @@
   "scripts": {
     "dev:backend": "pnpm --filter @thiago/backend dev",
     "dev:frontend": "pnpm --filter @thiago/frontend dev",
-    "test:core": "pnpm --filter @thiago/core test"
+    "test": "pnpm test:core && pnpm test:backend",
+    "test:core": "pnpm --filter @thiago/core test",
+    "test:backend": "pnpm --filter @thiago/backend test"
   },
   "packageManager": "pnpm@11.11.0"
 }

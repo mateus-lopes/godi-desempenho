@@ -6,7 +6,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
-import { api } from '../services/api'
+import { api, extractApiError } from '../services/api'
 import AppLoader from '../components/AppLoader.vue'
 import { useToast } from '../composables/useToast'
 import { getRowCache, setRowCache } from '../composables/useRowCache'
@@ -149,8 +149,8 @@ async function saveRow(row: Row) {
       await api.put(`/cotacoes/${row.id}`, rowToApiPayload(row))
     }
     autosave.markSaved()
-  } catch {
-    autosave.markError()
+  } catch (err: unknown) {
+    autosave.markError(extractApiError(err))
   }
 }
 
